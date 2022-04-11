@@ -20,7 +20,7 @@ Please feel free to download this project from my repo to your local drive. Open
 * open server and play around with the budget tracker! 
 
 ## **Project Links:**
-### [**track-my-mula Repository**](https://github.com/Metelak/organized-business/tree/main)
+### [**track-my-mula Repository**](https://metelak.github.io/track-my-mula/)
 ### [**track-my-mula heroku**](https://desolate-ridge-32767.herokuapp.com)
 
 ## **Questions:**
