@@ -32,7 +32,7 @@ self.addEventListener('install', function(evt) {
   self.skipWaiting();
 });
 
-// Activate the service worker and remove old data from the cache
+// Intercept fetch requests
 self.addEventListener('fetch', function(evt) {
     if (evt.request.url.includes('/api/')) {
         evt.respondWith(
@@ -50,37 +50,7 @@ self.addEventListener('fetch', function(evt) {
             }).catch(err => console.log(err))
         );
         return;
-        }
-
-  self.clients.claim();
-});
-
-// Intercept fetch requests
-self.addEventListener('fetch', function(evt) {
-  if (evt.request.url.includes('/api/')) {
-    evt.respondWith(
-      caches
-        .open(DATA_CACHE_NAME)
-        .then(cache => {
-          return fetch(evt.request)
-            .then(response => {
-              // If the response was good, clone it and store it in the cache.
-              if (response.status === 200) {
-                cache.put(evt.request.url, response.clone());
-              }
-
-              return response;
-            })
-            .catch(err => {
-              // Network request failed, try to get it from the cache.
-              return cache.match(evt.request);
-            });
-        })
-        .catch(err => console.log(err))
-    );
-
-    return;
-  }
+    }
 
   evt.respondWith(
     fetch(evt.request).catch(function() {
@@ -95,3 +65,25 @@ self.addEventListener('fetch', function(evt) {
     })
   );
 });
+
+// Delete outdated caches
+self.addEventListener('activate', function (e) {
+    e.waitUntil(
+      caches.keys().then(function (keyList) {
+        // `keyList` contains all cache names under your username.github.io
+        // filter out ones that has this app prefix to create white list
+        let cacheKeeplist = keyList.filter(function (key) {
+          return key.indexOf(APP_PREFIX);
+        })
+        // add current cache name to white list
+        cacheKeeplist.push(CACHE_NAME);
+  
+        return Promise.all(keyList.map(function (key, i) {
+          if (cacheKeeplist.indexOf(key) === -1) {
+            console.log('deleting cache : ' + keyList[i] );
+            return caches.delete(keyList[i]);
+          }
+        }));
+      })
+    );
+  });
